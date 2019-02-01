@@ -84,16 +84,22 @@ export default function( allowedKeys ) {
 		const _getItem = window.Storage.prototype.getItem.bind( window.localStorage );
 		const _removeItem = window.Storage.prototype.removeItem.bind( window.localStorage );
 
-		Object.defineProperty( window.localStorage, 'length', {
-			get: length( memoryStore ),
-		} );
-
-		Object.assign( window.localStorage, {
+		const localStorageOverride = {
 			setItem: setItem( memoryStore, allowedKeys, _setItem ),
 			getItem: getItem( memoryStore, allowedKeys, _getItem ),
 			removeItem: removeItem( memoryStore, allowedKeys, _removeItem ),
 			key: key( memoryStore ),
 			clear: clear( memoryStore ),
+			get length() {
+				return length( memoryStore );
+			}
+		};
+
+		// ATTENTION: This is a fix for Firefox that will be proposed in a separate PR.
+		Object.defineProperty( window, 'localStorage', {
+			value: localStorageOverride,
+			enumerable: true,
+			configurable: true,
 		} );
 	}
 }
